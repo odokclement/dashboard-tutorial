@@ -12,8 +12,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
- function ThemeToggler() {
+function ThemeToggler() {
   const { setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  // Ensure the component is mounted before rendering
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // Return null during SSR to avoid hydration mismatch
+  }
 
   return (
     <DropdownMenu>
@@ -42,4 +52,5 @@ import {
     </DropdownMenu>
   );
 }
+
 export default ThemeToggler;
