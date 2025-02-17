@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
   FormItem,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,20 +22,70 @@ import {
 import { useRouter } from "next/navigation";
 import { Github } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email" }),
-  password: z.string().min(6),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 const LoginForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    router.push("/");
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: "Invalid email or password",
+          variant: "destructive",
+        });
+      } else {
+        router.push("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    setGithubLoading(true);
+    try {
+      await signIn("github", { callbackUrl: "/" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign in with GitHub",
+        variant: "destructive",
+      });
+    } finally {
+      setGithubLoading(false);
+    }
   };
 
   return (
@@ -63,7 +112,7 @@ const LoginForm = () => {
                   </FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible: ring-0 text-black dark:text-white focus-visible: ring-offset-0"
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                       placeholder="Enter your email"
                       {...field}
                     />
@@ -82,7 +131,8 @@ const LoginForm = () => {
                   </FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible: ring-0 text-black dark:text-white focus-visible: ring-offset-0"
+                      type="password"
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                       placeholder="Enter your password"
                       {...field}
                     />
@@ -91,17 +141,19 @@ const LoginForm = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
 
             <Button
-              onClick={() => signIn()}
+              onClick={handleGithubSignIn}
               type="button"
               className="w-full flex items-center justify-center"
+              disabled={githubLoading}
+              aria-label="Sign in with GitHub"
             >
               <Github className="mr-2" />
-              Sign in with Github
+              {githubLoading ? "Signing in..." : "Sign in with GitHub"}
             </Button>
           </form>
         </Form>
