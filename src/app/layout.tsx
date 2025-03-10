@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "next-themes";
+import AuthSessionProvider from "@/SessionProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,7 @@ export default function RootLayout({
           enableSystem={true}
           storageKey="dashboard-theme"
         >
-          {children}
+          <AuthSessionProvider> {children}</AuthSessionProvider> 
           <Toaster />
         </ThemeProvider>
       </body>
