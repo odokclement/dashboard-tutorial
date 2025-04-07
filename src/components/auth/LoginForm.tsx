@@ -33,7 +33,7 @@ const formSchema = z.object({
 });
 
 const LoginForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -44,7 +44,12 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  interface FormData {
+    email: string;
+    password: string;
+  }
+
+  const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
