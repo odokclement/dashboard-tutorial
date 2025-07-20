@@ -43,7 +43,7 @@ const SignUpForm = () => {
     <Card className="w-96">
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
-        <CardDescription>Create new account</CardDescription>
+        <CardDescription>Create a new account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
         <Form {...form}>
